@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boris | Executive Hub</title>
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome Premium & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CATALOGUE EXCLUSIF DE THÈMES SOMBRES */
+        .theme-midnight { 
+            --bg: #0f172a; --bg-card: rgba(30, 41, 59, 0.4); --border: #1e293b; 
+            --border-hover: #334155; --text: #f1f5f9; --text-muted: #94a3b8; --accent: #10b981; 
+            --shimmer: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.25), transparent);
+        }
+        .theme-slate-luxury { 
+            --bg: #0b0f19; --bg-card: rgba(17, 24, 39, 0.4); --border: rgba(255, 255, 255, 0.04); 
+            --border-hover: rgba(255, 255, 255, 0.12); --text: #f3f4f6; --text-muted: #9ca3af; --accent: #f3f4f6; 
+            --shimmer: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        }
+        .theme-old-money { 
+            --bg: #111810; --bg-card: rgba(24, 36, 22, 0.3); --border: rgba(212, 175, 55, 0.08); 
+            --border-hover: rgba(212, 175, 55, 0.3); --text: #f4f4f0; --text-muted: #8a9688; --accent: #d4af37; 
+            --shimmer: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.35), transparent);
+        }
+        .theme-cyber { 
+            --bg: #050505; --bg-card: rgba(20, 20, 20, 0.8); --border: #ff0055; 
+            --border-hover: #ff0055; --text: #ffffff; --text-muted: #888888; --accent: #00ffcc; 
+            --shimmer: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.45), transparent);
+        }
+        .theme-noir-absolu { 
+            --bg: #000000; --bg-card: #0a0a0a; --border: #1a1a1a; 
+            --border-hover: #333333; --text: #ffffff; --text-muted: #666666; --accent: #ffffff; 
+            --shimmer: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+        }
+
+        /* Applications dynamiques */
+        #preview-zone { background-color: var(--bg); color: var(--text); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .custom-muted { color: var(--text-muted); }
+        .custom-border { border-color: var(--border); }
+        .custom-accent { color: var(--accent); }
+        .custom-icon-bg { background: var(--border-hover); }
+
+        /* BASE DES CARTES PREMIUM */
+        .custom-card { 
+            background-color: var(--bg-card); 
+            border: 1px solid var(--border); 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            position: relative;
+            overflow: hidden;
+        }
+        .custom-card:hover { 
+            border-color: var(--border-hover); 
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        /* CALQUE DE BALAYAGE AUTOMATIQUE ET CONTINU */
+        .shimmer-layer {
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: var(--shimmer);
+            transform: skewX(-20deg);
+            pointer-events: none;
+            animation: continuous-shimmer 4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes continuous-shimmer {
+            0% { left: -150%; }
+            20% { left: 150%; }
+            100% { left: 150%; }
+        }
+
+        /* CATALOGUE DES TYPOGRAPHIES */
+        .font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-garamond { font-family: 'Cormorant Garamond', serif; letter-spacing: -0.01em; }
+        .font-fraunces { font-family: 'Fraunces', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        #admin-panel { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
+    </style>
+</head>
+<body class="bg-[#070a12] text-slate-200 min-h-screen flex flex-col md:flex-row relative overflow-x-hidden antialiased">
+
+    <!-- PANNEAU DE CONFIGURATION INVISIBLE (Triple clic sur "Boris" pour ouvrir) -->
+    <aside id="admin-panel" class="fixed inset-y-0 left-0 w-80 md:w-96 bg-[#0f1626] border-r border-slate-800/60 p-6 space-y-6 overflow-y-auto max-h-screen z-40 transform -translate-x-full opacity-0 hidden">
+        <div class="flex justify-between items-center pt-2">
+            <div>
+                <h2 class="text-lg font-semibold text-white tracking-tight">Studio Secret</h2>
+                <p class="text-xs text-slate-400">Éditez vos configurations.</p>
+            </div>
+            <button id="close-admin-btn" class="text-slate-400 hover:text-white cursor-pointer p-1">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Portabilité -->
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 space-y-2.5">
+            <h4 class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Synchronisation & Transfert</h4>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="exportConfig()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 px-3 rounded-lg transition font-medium cursor-pointer flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrow-up-from-bracket text-[10px]"></i> Exporter
+                </button>
+                <button onclick="importConfig()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 px-3 rounded-lg transition font-medium cursor-pointer flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrow-down-to-bracket text-[10px]"></i> Importer
+                </button>
+            </div>
+            <textarea id="share-box" readonly class="hidden w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-[10px] font-mono text-emerald-400 focus:outline-none select-all" rows="3" placeholder="Code de configuration..."></textarea>
+        </div>
+
+        <!-- Design -->
+        <div class="space-y-4">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Identité & Design</h3>
+            <div>
+                <label class="block text-[11px] text-slate-400 font-medium mb-1.5">Thème Sombre Signature</label>
+                <select id="theme-selector" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-slate-600">
+                    <option value="theme-midnight">Midnight (Bleu Nuit Pro)</option>
+                    <option value="theme-slate-luxury">Slate Luxury (Foncé Institutionnel)</option>
+                    <option value="theme-old-money">Old Money (Dark British & Or Héraldique)</option>
+                    <option value="theme-cyber">Cyberpunk (Néon & Futuriste)</option>
+                    <option value="theme-noir-absolu">Noir Absolu (Minimalisme Radical)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[11px] text-slate-400 font-medium mb-1.5">Typographie</label>
+                <select id="font-selector" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-slate-600">
+                    <option value="font-jakarta">Plus Jakarta Sans (Moderne Intuitif)</option>
+                    <option value="font-inter">Inter (Classic Corporate)</option>
+                    <option value="font-montserrat">Montserrat (Géométrique Haut de Gamme)</option>
+                    <option value="font-playfair">Playfair Display (Prestige / Élégant)</option>
+                    <option value="font-mono">JetBrains Mono (Technique / Code)</option>
+                    <option value="font-garamond">Cormorant Garamond (Luxe Traditionnel)</option>
+                    <option value="font-fraunces">Fraunces (Editorial Expressif)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Liens -->
+        <div class="space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Architecture des Liens</h3>
+                <button id="add-link-btn" class="text-[11px] bg-white text-slate-950 font-medium px-2.5 py-1 rounded-md hover:bg-slate-200 transition cursor-pointer">
+                    <i class="fa-solid fa-plus mr-1"></i> Ajouter
+                </button>
+            </div>
+            <div id="links-editor-list" class="space-y-3"></div>
+        </div>
+    </aside>
+
+    <!-- HUB DE RENDU (Vitrine Réseaux Sociaux) -->
+    <section id="preview-zone" class="flex-1 min-h-screen flex flex-col justify-between p-8 sm:p-16 theme-slate-luxury font-jakarta w-full">
+        <div class="max-w-xl w-full mx-auto pt-16">
+            
+            <!-- Profil -->
+            <header class="text-center mb-16">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-transparent border custom-border shadow-sm mb-4 text-xl font-light tracking-wide text-white transition-all">
+                    B
+                </div>
+                <h1 id="preview-name" class="text-2xl font-medium tracking-tight text-white transition-colors cursor-default select-none">Boris</h1>
+                <p id="preview-subtitle" class="text-xs custom-muted mt-1.5 uppercase tracking-[0.2em] font-medium">Conseil & Stratégie</p>
+                <div class="h-px w-8 bg-current opacity-20 mx-auto mt-6"></div>
+            </header>
+
+            <!-- Conteneur de Cartes Scintillantes -->
+            <div id="preview-links-container" class="space-y-4"></div>
+
+        </div>
+
+        <footer class="text-center text-[11px] custom-muted tracking-widest uppercase pt-16 opacity-60">
+            <p>&copy; 2026 Boris. Tous droits réservés.</p>
+        </footer>
+    </section>
+
+    <!-- LOGIQUE LOGICIELLE (JS) -->
+    <script>
+        let appState = JSON.parse(localStorage.getItem('boris_hub_state_premium')) || {
+            theme: 'theme-slate-luxury',
+            font: 'font-jakarta',
+            links: [
+                { id: '1', title: "Guide d'Optimisation Fiscale", url: "https://votre-guide-fiscal.netlify.app", desc: "Estimez vos opportunités et maximisez vos impacts.", icon: "fa-arrow-trend-up" },
+                { id: '2', title: "Planifier une Consultation", url: "https://calendly.com", desc: "Accès direct à mon agenda pour une session stratégique.", icon: "fa-signature" }
+            ]
+        };
+
+        let clickCount = 0;
+        let clickTimeout;
+
+        const adminPanel = document.getElementById('admin-panel');
+        const triggerName = document.getElementById('preview-name');
+        const closeAdminBtn = document.getElementById('close-admin-btn');
+        const themeSelector = document.getElementById('theme-selector');
+        const fontSelector = document.getElementById('font-selector');
+        const linksEditorList = document.getElementById('links-editor-list');
+        const previewLinksContainer = document.getElementById('preview-links-container');
+        const previewZone = document.getElementById('preview-zone');
+        const shareBox = document.getElementById('share-box');
+
+        triggerName.addEventListener('click', () => {
+            clickCount++;
+            clearTimeout(clickTimeout);
+            clickTimeout = setTimeout(() => { clickCount = 0; }, 800);
+            if (clickCount === 3) { clickCount = 0; openAdmin(); }
+        });
+
+        function openAdmin() {
+            adminPanel.classList.remove('hidden');
+            setTimeout(() => adminPanel.classList.remove('-translate-x-full', 'opacity-0'), 10);
+        }
+
+        closeAdminBtn.addEventListener('click', () => {
+            adminPanel.classList.add('-translate-x-full', 'opacity-0');
+            shareBox.classList.add('hidden');
+            setTimeout(() => adminPanel.classList.add('hidden'), 400);
+        });
+
+        function saveState() {
+            localStorage.setItem('boris_hub_state_premium', JSON.stringify(appState));
+            renderPreview();
+        }
+
+        function exportConfig() {
+            const encryptedStr = btoa(unescape(encodeURIComponent(JSON.stringify(appState))));
+            shareBox.value = encryptedStr;
+            shareBox.classList.toggle('hidden');
+            if(!shareBox.classList.contains('hidden')) {
+                shareBox.select();
+                alert("Configuration exportée avec succès !");
+            }
+        }
+
+        function importConfig() {
+            const code = prompt("Collez votre clé de configuration :");
+            if(code) {
+                try {
+                    const decodedState = JSON.parse(decodeURIComponent(escape(atob(code))));
+                    if(decodedState.theme === 'theme-minimal' || decodedState.theme === 'theme-editorial' || decodedState.theme === 'theme-ivory-editorial') {
+                        decodedState.theme = 'theme-slate-luxury';
+                    }
+                    if(decodedState.theme && decodedState.links) {
+                        appState = decodedState;
+                        saveState();
+                        renderEditors();
+                        alert("Hub mis à jour !");
+                    } else { throw new Error(); }
+                } catch(e) { alert("Erreur de clé."); }
+            }
+        }
+
+        function renderPreview() {
+            previewZone.className = `flex-1 min-h-screen flex flex-col justify-between p-8 sm:p-16 ${appState.theme} ${appState.font} w-full`;
+            themeSelector.value = appState.theme;
+            fontSelector.value = appState.font;
+
+            document.getElementById('preview-name').style.color = '#ffffff';
+
+            previewLinksContainer.innerHTML = '';
+            appState.links.forEach((link, index) => {
+                if(!link.title) return;
+                
+                const card = document.createElement('a');
+                card.href = link.url || '#';
+                card.target = "_blank";
+                card.className = "custom-card group flex items-center justify-between p-5 rounded-xl backdrop-blur-sm shadow-sm";
+                
+                const delay = index * 0.6;
+                
+                card.innerHTML = `
+                    <div class="shimmer-layer" style="animation-delay: ${delay}s;"></div>
+
+                    <div class="flex items-center space-x-4 relative z-10">
+                        <div class="w-10 h-10 rounded-lg custom-icon-bg flex items-center justify-center custom-accent border border-white/5">
+                            <i class="fa-solid ${link.icon || 'fa-link'} text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-sm sm:text-base tracking-tight text-white">${link.title}</h3>
+                            <p class="text-xs custom-muted mt-0.5 font-light">${link.desc || ''}</p>
+                        </div>
+                    </div>
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 bg-white/5 transition-all duration-300 relative z-10">
+                        <i class="fa-solid fa-arrow-right text-xs custom-accent"></i>
+                    </div>
+                `;
+                previewLinksContainer.appendChild(card);
+            });
+        }
+
+        function renderEditors() {
+            linksEditorList.innerHTML = '';
+            appState.links.forEach((link) => {
+                const item = document.createElement('div');
+                item.className = "bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2.5 relative";
+                
+                item.innerHTML = `
+                    <button class="absolute top-2 right-2 text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer" onclick="deleteLink('${link.id}')">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    <input type="text" placeholder="Titre du lien" value="${link.title}" class="w-full bg-slate-800 text-xs text-white font-medium border border-transparent rounded-lg px-2.5 py-1.5 focus:border-slate-700 focus:outline-none" oninput="updateLink('${link.id}', 'title', this.value)">
+                    <input type="text" placeholder="URL" value="${link.url}" class="w-full bg-slate-800 text-xs text-slate-300 border border-transparent rounded-lg px-2.5 py-1.5 focus:border-slate-700 focus:outline-none" oninput="updateLink('${link.id}', 'url', this.value)">
+                    <input type="text" placeholder="Description" value="${link.desc}" class="w-full bg-slate-800 text-xs text-slate-400 border border-transparent rounded-lg px-2.5 py-1.5 focus:border-slate-700 focus:outline-none" oninput="updateLink('${link.id}', 'desc', this.value)">
+                    <div class="flex items-center justify-between pt-1">
+                        <span class="text-[10px] text-slate-500 font-medium">Icône :</span>
+                        <select class="bg-slate-800 text-[11px] rounded-md text-slate-300 p-1 border border-transparent focus:border-slate-700" onchange="updateLink('${link.id}', 'icon', this.value)">
+                            <option value="fa-arrow-trend-up" ${link.icon === 'fa-arrow-trend-up' ? 'selected' : ''}>Graphique Ascendant</option>
+                            <option value="fa-signature" ${link.icon === 'fa-signature' ? 'selected' : ''}>Signature/Plume</option>
+                            <option value="fa-briefcase" ${link.icon === 'fa-briefcase' ? 'selected' : ''}>Cabinet/Affaires</option>
+                            <option value="fa-gem" ${link.icon === 'fa-gem' ? 'selected' : ''}>Premium/Joaillerie</option>
+                            <option value="fa-compass" ${link.icon === 'fa-compass' ? 'selected' : ''}>Boussole/Stratégie</option>
+                            <option value="fa-paper-plane" ${link.icon === 'fa-paper-plane' ? 'selected' : ''}>Contact Direct</option>
+                        </select>
+                    </div>
+                `;
+                linksEditorList.appendChild(item);
+            });
+        }
+
+        function updateLink(id, field, value) {
+            const link = appState.links.find(l => l.id === id);
+            if(link) { link[field] = value; saveState(); }
+        }
+
+        function deleteLink(id) {
+            appState.links = appState.links.filter(l => l.id !== id);
+            saveState(); renderEditors();
+        }
+
+        document.getElementById('add-link-btn').addEventListener('click', () => {
+            const newId = Date.now().toString();
+            appState.links.push({ id: newId, title: "Nouveau Service", url: "https://", desc: "Description.", icon: "fa-compass" });
+            saveState(); renderEditors();
+        });
+
+        themeSelector.addEventListener('change', (e) => { appState.theme = e.target.value; saveState(); });
+        fontSelector.addEventListener('change', (e) => { appState.font = e.target.value; saveState(); });
+
+        renderEditors();
+        renderPreview();
+    </script>
+</body>
+</html>
