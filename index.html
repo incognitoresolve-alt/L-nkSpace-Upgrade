@@ -119,62 +119,64 @@
             appId: "1:550167210912:web:739fc70f8348f74eeb12c5"
         };
 
-        const ADMIN_PASSWORD = "Admin123spx"; 
+        // EMPREINTE SÉCURISÉE DU MOT DE PASSE (Admin123spx)
+        const HASHED_PWD = "c8949826353d100085a6b093359dae06f157776d65420379207038165b4c6e49"; 
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const docRef = doc(db, "executive_hub", "boris_profile");
 
-        let appState = {
-            theme: 'theme-slate-luxury',
-            font: 'font-jakarta',
-            links: []
-        };
-
+        let appState = { theme: 'theme-slate-luxury', font: 'font-jakarta', links: [] };
         let clickCount = 0, clickTimeout, isAuthenticated = false;
-        const adminPanel = document.getElementById('admin-panel'), triggerName = document.getElementById('preview-name');
 
-        // ÉCOUTEUR CLOUD
         onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 appState = docSnap.data();
                 renderPreview();
-                if (!adminPanel.classList.contains('hidden')) renderEditors();
+                if (!document.getElementById('admin-panel').classList.contains('hidden')) renderEditors();
             } else { setDoc(docRef, appState); }
         });
 
-        // ACCÈS ADMIN (TRIPLE CLIC)
-        triggerName.addEventListener('click', () => {
+        // Fonction de hachage SHA-256
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function verifyIdentityAndOpen() {
+            const input = prompt("Accès Studio - Mot de passe :");
+            if (input) {
+                const hashedInput = await sha256(input);
+                if (hashedInput === HASHED_PWD) {
+                    isAuthenticated = true;
+                    renderEditors(); 
+                    const panel = document.getElementById('admin-panel');
+                    panel.classList.remove('hidden'); 
+                    setTimeout(() => panel.classList.remove('-translate-x-full', 'opacity-0'), 10);
+                } else {
+                    alert("Mot de passe incorrect.");
+                }
+            }
+        }
+
+        document.getElementById('preview-name').addEventListener('click', () => {
             clickCount++; clearTimeout(clickTimeout);
             clickTimeout = setTimeout(() => { clickCount = 0; }, 800);
             if (clickCount === 3) { clickCount = 0; verifyIdentityAndOpen(); }
         });
 
-        function verifyIdentityAndOpen() {
-            if (!isAuthenticated) {
-                if (prompt("Mot de passe Cloud :") === ADMIN_PASSWORD) { isAuthenticated = true; openAdmin(); }
-                else { alert("Erreur."); }
-            } else openAdmin();
-        }
-
-        function openAdmin() { 
-            renderEditors(); 
-            adminPanel.classList.remove('hidden'); 
-            setTimeout(() => adminPanel.classList.remove('-translate-x-full', 'opacity-0'), 10); 
-        }
-
         document.getElementById('close-admin-btn').addEventListener('click', () => { 
-            adminPanel.classList.add('-translate-x-full', 'opacity-0'); 
-            setTimeout(() => adminPanel.classList.add('hidden'), 400); 
+            const panel = document.getElementById('admin-panel');
+            panel.classList.add('-translate-x-full', 'opacity-0'); 
+            setTimeout(() => panel.classList.add('hidden'), 400); 
         });
 
-        // SYNCHRONISATION
         async function pushStateToCloud() { 
-            if(isAuthenticated) {
-                try { await setDoc(docRef, appState); } catch(e) { console.error("Erreur de sauvegarde", e); }
-            }
+            if(isAuthenticated) try { await setDoc(docRef, appState); } catch(e) {}
         }
 
-        // RENDU VITRINE
         function renderPreview() {
             document.getElementById('preview-zone').className = `flex-1 min-h-screen flex flex-col justify-between p-8 sm:p-16 ${appState.theme} ${appState.font} w-full`;
             document.getElementById('theme-selector').value = appState.theme;
@@ -185,25 +187,11 @@
                 const card = document.createElement('a');
                 card.href = link.url || '#'; card.target = "_blank";
                 card.className = "custom-card group flex items-center justify-between p-5 rounded-xl backdrop-blur-sm shadow-sm";
-                card.innerHTML = `
-                    <div class="shimmer-layer" style="animation-delay: ${i*0.6}s;"></div>
-                    <div class="flex items-center space-x-4 relative z-10">
-                        <div class="w-10 h-10 rounded-lg custom-icon-bg flex items-center justify-center custom-accent border border-white/5">
-                            <i class="fa-solid ${link.icon || 'fa-link'} text-sm"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-medium text-sm text-white">${link.title}</h3>
-                            <p class="text-xs custom-muted font-light">${link.desc || ''}</p>
-                        </div>
-                    </div>
-                    <div class="w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 bg-white/5 transition-all relative z-10">
-                        <i class="fa-solid fa-arrow-right text-xs custom-accent"></i>
-                    </div>`;
+                card.innerHTML = `<div class="shimmer-layer" style="animation-delay: ${i*0.6}s;"></div><div class="flex items-center space-x-4 relative z-10"><div class="w-10 h-10 rounded-lg custom-icon-bg flex items-center justify-center custom-accent border border-white/5"><i class="fa-solid ${link.icon || 'fa-link'} text-sm"></i></div><div><h3 class="font-medium text-sm text-white">${link.title}</h3><p class="text-xs custom-muted font-light">${link.desc || ''}</p></div></div><div class="w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 bg-white/5 transition-all relative z-10"><i class="fa-solid fa-arrow-right text-xs custom-accent"></i></div>`;
                 container.appendChild(card);
             });
         }
 
-        // RENDU ÉDITEUR
         function renderEditors() {
             const list = document.getElementById('links-editor-list');
             list.innerHTML = '';
@@ -211,9 +199,7 @@
                 const item = document.createElement('div');
                 item.className = "bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2.5 relative";
                 item.innerHTML = `
-                    <button class="absolute top-2 right-2 text-slate-500 hover:text-rose-400 cursor-pointer" onclick="window.deleteLink('${link.id}')">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    <button class="absolute top-2 right-2 text-slate-500 hover:text-rose-400 cursor-pointer" onclick="window.deleteLink('${link.id}')"><i class="fa-solid fa-trash-can"></i></button>
                     <input type="text" placeholder="Titre" value="${link.title}" class="w-full bg-slate-800 text-xs text-white p-1.5 rounded-lg focus:outline-none" onchange="window.updateLink('${link.id}', 'title', this.value)">
                     <input type="text" placeholder="URL" value="${link.url}" class="w-full bg-slate-800 text-xs text-slate-300 p-1.5 rounded-lg focus:outline-none" onchange="window.updateLink('${link.id}', 'url', this.value)">
                     <input type="text" placeholder="Description" value="${link.desc}" class="w-full bg-slate-800 text-xs text-slate-400 p-1.5 rounded-lg focus:outline-none" onchange="window.updateLink('${link.id}', 'desc', this.value)">
@@ -228,29 +214,9 @@
             });
         }
 
-        // FONCTIONS GLOBALES POUR L'ÉDITEUR
-        window.updateLink = (id, field, value) => {
-            const link = appState.links.find(x => x.id === id);
-            if(link) { 
-                link[field] = value; 
-                pushStateToCloud(); 
-            }
-        };
-
-        window.deleteLink = (id) => {
-            appState.links = appState.links.filter(x => x.id !== id);
-            renderEditors();
-            pushStateToCloud();
-        };
-
-        document.getElementById('add-link-btn').addEventListener('click', () => {
-            if(!isAuthenticated) return;
-            const newLink = { id: Date.now().toString(), title: "Nouveau Service", url: "https://", desc: "Description.", icon: "fa-link" };
-            appState.links.push(newLink);
-            renderEditors();
-            pushStateToCloud();
-        });
-
+        window.updateLink = (id, field, value) => { const link = appState.links.find(x => x.id === id); if(link) { link[field] = value; pushStateToCloud(); } };
+        window.deleteLink = (id) => { appState.links = appState.links.filter(x => x.id !== id); renderEditors(); pushStateToCloud(); };
+        document.getElementById('add-link-btn').addEventListener('click', () => { if(!isAuthenticated) return; appState.links.push({ id: Date.now().toString(), title: "Nouveau", url: "https://", desc: "", icon: "fa-link" }); renderEditors(); pushStateToCloud(); });
         document.getElementById('theme-selector').addEventListener('change', (e) => { appState.theme = e.target.value; pushStateToCloud(); });
         document.getElementById('font-selector').addEventListener('change', (e) => { appState.font = e.target.value; pushStateToCloud(); });
         window.pushStateToCloud = pushStateToCloud;
