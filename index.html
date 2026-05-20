@@ -46,7 +46,7 @@
         <div class="flex justify-between items-center pt-2">
             <div>
                 <h2 class="text-lg font-semibold text-white tracking-tight">Studio Nuage</h2>
-                <p class="text-xs text-slate-400">Modifications synchronisées en temps réel.</p>
+                <p class="text-xs text-slate-400">Synchronisation Cloud active.</p>
             </div>
             <button id="close-admin-btn" class="text-slate-400 hover:text-white cursor-pointer p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
@@ -87,7 +87,7 @@
         </div>
 
         <button onclick="pushStateToCloud()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Forcer la Synchronisation
+            <i class="fa-solid fa-cloud-arrow-up"></i> Forcer la Sauvegarde
         </button>
     </aside>
 
@@ -119,9 +119,6 @@
             appId: "1:550167210912:web:739fc70f8348f74eeb12c5"
         };
 
-        // EMPREINTE SÉCURISÉE DU MOT DE PASSE (Admin123spx)
-        const HASHED_PWD = "c8949826353d100085a6b093359dae06f157776d65420379207038165b4c6e49"; 
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const docRef = doc(db, "executive_hub", "boris_profile");
@@ -137,27 +134,16 @@
             } else { setDoc(docRef, appState); }
         });
 
-        // Fonction de hachage SHA-256
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function verifyIdentityAndOpen() {
+        function verifyIdentityAndOpen() {
             const input = prompt("Accès Studio - Mot de passe :");
-            if (input) {
-                const hashedInput = await sha256(input);
-                if (hashedInput === HASHED_PWD) {
-                    isAuthenticated = true;
-                    renderEditors(); 
-                    const panel = document.getElementById('admin-panel');
-                    panel.classList.remove('hidden'); 
-                    setTimeout(() => panel.classList.remove('-translate-x-full', 'opacity-0'), 10);
-                } else {
-                    alert("Mot de passe incorrect.");
-                }
+            if (input === "Admin123spx") {
+                isAuthenticated = true;
+                renderEditors(); 
+                const panel = document.getElementById('admin-panel');
+                panel.classList.remove('hidden'); 
+                setTimeout(() => panel.classList.remove('-translate-x-full', 'opacity-0'), 10);
+            } else if(input !== null) {
+                alert("Mot de passe incorrect.");
             }
         }
 
@@ -174,7 +160,7 @@
         });
 
         async function pushStateToCloud() { 
-            if(isAuthenticated) try { await setDoc(docRef, appState); } catch(e) {}
+            if(isAuthenticated) try { await setDoc(docRef, appState); } catch(e) { console.error(e); }
         }
 
         function renderPreview() {
@@ -209,6 +195,7 @@
                         <option value="fa-signature" ${link.icon==='fa-signature'?'selected':''}>Plume</option>
                         <option value="fa-briefcase" ${link.icon==='fa-briefcase'?'selected':''}>Mallette</option>
                         <option value="fa-gem" ${link.icon==='fa-gem'?'selected':''}>Premium</option>
+                        <option value="fa-car" ${link.icon==='fa-car'?'selected':''}>Automobile</option>
                     </select>`;
                 list.appendChild(item);
             });
